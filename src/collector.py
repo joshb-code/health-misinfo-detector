@@ -4,6 +4,7 @@ import psycopg2
 import os
 from dotenv import load_dotenv
 import hashlib
+import time
 
 # 2. Load environment variables
 load_dotenv()
@@ -55,8 +56,8 @@ def fetch_reddit_posts(subreddit, search_term):
                 "reddit_id": post_data.get("id"),
                 "title": post_data.get("title"),
                 "author": post_data.get("author"),
-                "created_utc": post_data.get("created_utc"),
-                "subreddit": subreddit,
+                "post_date": post_data.get("created_utc"),
+                "source": subreddit,
                 "search_term": search_term,
                 "body": post_data.get("selftext"),
                 "score": post_data.get("score"),
@@ -79,22 +80,21 @@ def insert_post(conn, post):
     try:
         with conn.cursor() as cur:
             cur.execute("""
-                        INSERT INTO POSTS (post_id, reddit_id, source, title, author_hash, score, num_comments, upvote_ratio, flair, post_date, collected_at, search_term)
-                        VALUES (%s, %s, %s, to_timestamp(%s), %s, %s)
+                        INSERT INTO POSTS (reddit_id, source, title, body, author_hash, score, num_comments, upvote_ratio, flair, post_date,  searchterm)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, to_timestamp(%s), %s)
                         ON CONFLICT (reddit_id) DO NOTHING -- Skip duplicates
                         """,
                         (
-                            post["post_id"],
                             post["reddit_id"],
                             post["source"],
                             post["title"],
+                            post["body"],
                             hash_author(post["author"]), 
                             post["score"],
                             post["num_comments"],
                             post["upvote_ratio"],
                             post["flair"],
                             post["post_date"],
-                            post["collected_at"],
                             post["search_term"]
                         )
             )
@@ -102,8 +102,7 @@ def insert_post(conn, post):
     except Exception as e:
         print(f"Error inserting post into database: {e}")
         conn.rollback()
-        cur.close()
-        conn.close()
+    
 # Helper function to hash author names (for anonymization)
 def hash_author(author_name):
     if author_name is None:
@@ -117,8 +116,8 @@ def hash_author(author_name):
 #    - Fetch posts, insert each one
 #    - Print how many were collected
 if __name__ == "__main__":
-    subreddits = ["python", "datascience"]
-    search_terms = ["pandas", "machine learning"]
+    subreddits = ["nutrition", "supplements", "fitness", "loseit", "ScientificNutrition", "AlternativeHealth", "Nootropics"]
+    search_terms = ["detox", "superfood", "fat burner", "miracle cure", "apple cider vinegar", "natural remedy", "cleanses toxins", "supplement stack"]
 
     conn = connect_db()
     if conn is None:
@@ -133,6 +132,7 @@ if __name__ == "__main__":
                 insert_post(conn, post)
             total_collected += len(posts)
             print(f"Collected {len(posts)} posts from r/{subreddit} for search term '{search_term}'")
+            time.sleep(2)
 
     print(f"Total posts collected: {total_collected}")
     conn.close() 
