@@ -24,4 +24,4 @@ RUN crontab /etc/cron.d/collector-cron
 RUN touch /var/log/collector.log
 
 #start cron service
-CMD ["cron", "-f"]
+CMD printenv > /etc/environment && cron -f
