@@ -24,4 +24,5 @@ RUN crontab /etc/cron.d/collector-cron
 RUN touch /var/log/collector.log
 
 #start cron service
-CMD printenv > /etc/environment && cron -f
+CMD env | sed 's/^\(.*\)$/export \1/g' > /etc/environment && cron -f
+
