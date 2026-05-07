@@ -1,5 +1,10 @@
 .env
-__pycache__/
-*.pyc
 venv/
-data/
+mlruns/
+*.pkl
+*.db
+*.pyc
+__pycache__/
+data/training_data.csv
+data/processed_posts.csv
+data/manual_labeling.csv
