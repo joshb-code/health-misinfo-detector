@@ -8,3 +8,4 @@ __pycache__/
 data/training_data.csv
 data/processed_posts.csv
 data/manual_labeling.csv
+models/bert-misinfo/model.safetensors
