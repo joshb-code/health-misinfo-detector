@@ -48,7 +48,7 @@ health-misinfo-detector/
 │   ├── train_bert.py         # BERT fine-tuning
 │   └── api.py                # FastAPI prediction endpoint
 ├── models/
-│   └── bert-misinfo/         # Saved model (weights via Git LFS)
+│   └── bert-misinfo/         # Saved model (weights hosted on HF Space, see below)
 ├── sql/
 │   └── init.sql
 ├── app.py                    # Gradio demo
@@ -58,12 +58,15 @@ health-misinfo-detector/
 
 ## Run Locally
 
+Model weights aren't tracked in this repo. The trained weights live in the [Hugging Face Space](https://huggingface.co/spaces/Jbcode/health-misinfo-detector) (`hf-space/models/bert-misinfo`) — copy them into `models/bert-misinfo/` locally, or run `train_bert.py` to regenerate them, before starting the API or demo.
+
 ```bash
 # Start database
 docker-compose up -d
 
 # Install dependencies
-pip install -r requirements.txt
+pip install torch transformers fastapi uvicorn gradio
+# or: pip install -r requirements.txt
 
 # Run API
 uvicorn src.api:app --reload
@@ -76,7 +79,7 @@ API docs available at `http://127.0.0.1:8000/docs`
 
 ## Limitations
 
-- Model is biased toward the misinfo class due to training data imbalance
+- Model is biased toward the opinion class due to training data imbalance
 - Accurate class recall is low (0.24) — addressable with more labeled examples
 - Trained on Reddit posts only; may not generalize to other platforms
 - No fine-tuning on domain-specific health vocabulary beyond base BERT
